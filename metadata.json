@@ -1,0 +1,6 @@
+{
+  "name": "Winter Arc Discipline Tracker",
+  "description": "High-performance discipline and habit tracker for the Winter Arc (October 1 to January 1) with countdown, streak statistics, 14-day consistency grid, and monk-mode focus.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
