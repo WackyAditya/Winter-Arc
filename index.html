@@ -4,9 +4,9 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Winter Arc Discipline Tracker</title>
-    <meta name="description" content="High-performance discipline and habit tracker for the Winter Arc (October 1 to January 1) with countdown, streak statistics, 14-day consistency grid, and monk-mode focus." />
+    <meta name="description" content="High-performance discipline and habit tracker for the Winter Arc (October 1 to January 1) with countdown, streak statistics, 14-day consistency grid, Google Calendar integration, and monk-mode focus." />
     <meta property="og:title" content="Winter Arc Discipline Tracker" />
-    <meta property="og:description" content="High-performance discipline and habit tracker for the Winter Arc (October 1 to January 1)." />
+    <meta property="og:description" content="High-performance discipline and habit tracker for the Winter Arc (October 1 to January 1) with Google Calendar sync." />
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary_large_image" />
 
@@ -54,7 +54,6 @@
     </script>
 
     <style>
-      /* Smooth transitions & custom scrollbar */
       ::-webkit-scrollbar {
         width: 6px;
         height: 6px;
@@ -72,11 +71,9 @@
       .tabular-nums {
         font-variant-numeric: tabular-nums;
       }
-      /* Progress ring transitions */
       .progress-ring-circle {
         transition: stroke-dashoffset 0.6s cubic-bezier(0.16, 1, 0.3, 1), stroke 0.4s ease;
       }
-      /* Strike-through line transition */
       .strike-line {
         position: relative;
       }
@@ -93,7 +90,6 @@
       .strike-completed::after {
         width: 100%;
       }
-      /* Custom focus outlines */
       button:focus-visible, input:focus-visible, select:focus-visible {
         outline: 2px solid #f59e0b;
         outline-offset: 2px;
@@ -133,10 +129,16 @@
 
         <!-- Zone 3: Primary Utility Actions -->
         <div class="flex items-center gap-2">
+          
+          <!-- Google Calendar Auth Slot -->
+          <div id="authArea" class="flex items-center">
+            <!-- Populated dynamically by TypeScript (Sign in button or user profile pill) -->
+          </div>
+
           <!-- Monk Mode Focus Toggle -->
           <button 
             id="monkModeBtn" 
-            onclick="toggleMonkMode()" 
+            onclick="window.winterArc.toggleMonkMode()" 
             title="Toggle Monk Mode (Focus on current task)" 
             class="h-9 px-3 rounded-lg border border-borderline bg-surface hover:bg-surface-highlight text-neutral-300 hover:text-white text-xs font-medium flex items-center gap-2 transition-all">
             <i data-lucide="eye" class="w-3.5 h-3.5 text-amber-400"></i>
@@ -146,7 +148,7 @@
           <!-- Audio Tactile Feedback Toggle -->
           <button 
             id="soundBtn" 
-            onclick="toggleSound()" 
+            onclick="window.winterArc.toggleSound()" 
             title="Toggle Sound Effects" 
             class="w-9 h-9 rounded-lg border border-borderline bg-surface hover:bg-surface-highlight text-neutral-300 hover:text-white flex items-center justify-center transition-all">
             <i id="soundIcon" data-lucide="volume-2" class="w-4 h-4"></i>
@@ -156,24 +158,24 @@
           <div class="relative">
             <button 
               id="menuBtn" 
-              onclick="toggleMenu()" 
+              onclick="window.winterArc.toggleMenu()" 
               class="w-9 h-9 rounded-lg border border-borderline bg-surface hover:bg-surface-highlight text-neutral-300 hover:text-white flex items-center justify-center transition-all">
               <i data-lucide="more-vertical" class="w-4 h-4"></i>
             </button>
             
             <!-- Dropdown Menu -->
             <div id="dropdownMenu" class="hidden absolute right-0 mt-2 w-48 rounded-xl bg-surface border border-borderline p-1.5 shadow-2xl z-50 text-xs font-medium">
-              <button onclick="exportData()" class="w-full text-left px-3 py-2 rounded-lg hover:bg-surface-highlight flex items-center gap-2.5 text-neutral-200">
+              <button onclick="window.winterArc.exportData()" class="w-full text-left px-3 py-2 rounded-lg hover:bg-surface-highlight flex items-center gap-2.5 text-neutral-200">
                 <i data-lucide="download" class="w-3.5 h-3.5 text-neutral-400"></i>
                 Export JSON
               </button>
               <label class="w-full text-left px-3 py-2 rounded-lg hover:bg-surface-highlight flex items-center gap-2.5 text-neutral-200 cursor-pointer">
                 <i data-lucide="upload" class="w-3.5 h-3.5 text-neutral-400"></i>
                 Import JSON
-                <input type="file" id="importFileInput" accept=".json" onchange="importData(event)" class="hidden">
+                <input type="file" id="importFileInput" accept=".json" onchange="window.winterArc.importData(event)" class="hidden">
               </label>
               <div class="h-px bg-borderline my-1"></div>
-              <button onclick="confirmResetDay()" class="w-full text-left px-3 py-2 rounded-lg hover:bg-red-950/40 text-red-400 hover:text-red-300 flex items-center gap-2.5">
+              <button onclick="window.winterArc.confirmResetDay()" class="w-full text-left px-3 py-2 rounded-lg hover:bg-red-950/40 text-red-400 hover:text-red-300 flex items-center gap-2.5">
                 <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
                 Reset Today's Habits
               </button>
@@ -188,7 +190,6 @@
 
       <!-- SECTION 1: COUNTDOWN TO JAN 1 -->
       <section id="countdownSection" class="relative overflow-hidden rounded-2xl border border-borderline bg-surface/80 p-5 sm:p-7 backdrop-blur">
-        <!-- Subtle industrial background glow -->
         <div class="absolute -right-20 -top-20 w-64 h-64 bg-amber-500/5 rounded-full blur-3xl pointer-events-none"></div>
 
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
@@ -256,14 +257,14 @@
           </div>
         </div>
         <button 
-          onclick="shuffleQuote()" 
+          onclick="window.winterArc.shuffleQuote()" 
           title="Next Discipline Quote"
           class="shrink-0 p-2.5 rounded-lg border border-borderline bg-surface hover:bg-surface-highlight text-neutral-400 hover:text-white transition-colors">
           <i data-lucide="shuffle" class="w-4 h-4"></i>
         </button>
       </section>
 
-      <!-- SECTION 3: MONK MODE FOCUS BANNER (Hidden by default, shown in Monk Mode) -->
+      <!-- SECTION 3: MONK MODE FOCUS BANNER -->
       <section id="monkBanner" class="hidden rounded-2xl border border-amber-500/40 bg-amber-500/5 p-5 text-center space-y-3">
         <div class="flex items-center justify-center gap-2 text-xs font-mono text-amber-400 font-bold uppercase tracking-wider">
           <i data-lucide="shield" class="w-4 h-4"></i>
@@ -278,22 +279,72 @@
         <div class="pt-2">
           <button 
             id="monkCheckBtn" 
-            onclick="checkNextMonkHabit()" 
+            onclick="window.winterArc.checkNextMonkHabit()" 
             class="px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-semibold text-xs font-mono uppercase tracking-wider transition-transform active:scale-95 shadow-lg shadow-amber-500/20">
             Mark Protocol Done
           </button>
         </div>
       </section>
 
-      <!-- SECTION 4: STATS & CONSISTENCY OVERVIEW -->
+      <!-- SECTION 4: GOOGLE CALENDAR INTEGRATION PANEL -->
+      <section id="calendarSection" class="rounded-2xl border border-borderline bg-surface/80 p-5 sm:p-6 space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-borderline pb-4">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-500 shrink-0">
+              <i data-lucide="calendar" class="w-4 h-4"></i>
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <h2 class="text-base font-bold text-white">Google Calendar Time-Blocking</h2>
+                <span id="calendarEventsBadge" class="text-[10px] font-mono px-2 py-0.5 rounded bg-neutral-900 border border-borderline text-neutral-400">
+                  0 Events
+                </span>
+              </div>
+              <p class="text-xs text-neutral-400 mt-0.5">
+                Block dedicated time on your Google Calendar for today's non-negotiable protocols.
+              </p>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2 flex-wrap">
+            <button 
+              onclick="window.winterArc.initiateCalendarSync()" 
+              class="h-8 px-3 rounded-lg bg-amber-500 hover:bg-amber-400 text-black text-xs font-semibold flex items-center gap-1.5 transition-all active:scale-95 shadow">
+              <i data-lucide="calendar-sync" class="w-3.5 h-3.5"></i>
+              <span>Sync Protocols to Calendar</span>
+            </button>
+            <button 
+              onclick="window.winterArc.loadCalendarEvents()" 
+              title="Refresh Calendar Events"
+              class="h-8 w-8 rounded-lg border border-borderline bg-pitch hover:bg-surface-highlight text-neutral-400 hover:text-white flex items-center justify-center transition-colors">
+              <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+            </button>
+            <button 
+              onclick="window.winterArc.scheduleJan1Milestone()" 
+              title="Add Jan 1 Arc Victory Milestone to Calendar"
+              class="h-8 px-2.5 rounded-lg border border-borderline bg-pitch hover:bg-surface-highlight text-neutral-300 hover:text-white text-xs font-mono flex items-center gap-1.5 transition-colors">
+              <i data-lucide="trophy" class="w-3.5 h-3.5 text-amber-400"></i>
+              <span>Jan 1 Milestone</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Today's Google Calendar Events Feed -->
+        <div id="calendarEventsList" class="space-y-2">
+          <!-- Populated by calendar engine -->
+          <div class="py-4 text-center text-xs font-mono text-neutral-500">
+            Sign in with Google to view and sync your calendar schedule.
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 5: STATS & CONSISTENCY OVERVIEW -->
       <section id="statsSection" class="grid grid-cols-1 md:grid-cols-3 gap-4">
         
         <!-- CARD A: Circular Habit Progress Ring -->
         <div class="rounded-2xl border border-borderline bg-surface/80 p-5 flex items-center gap-5">
-          <!-- SVG Progress Ring -->
           <div class="relative w-24 h-24 shrink-0 flex items-center justify-center">
             <svg class="w-24 h-24 transform -rotate-90" viewBox="0 0 100 100">
-              <!-- Background track -->
               <circle
                 cx="50"
                 cy="50"
@@ -302,7 +353,6 @@
                 stroke-width="8"
                 fill="transparent"
               />
-              <!-- Progress bar -->
               <circle
                 id="progressRing"
                 class="progress-ring-circle"
@@ -317,14 +367,12 @@
                 fill="transparent"
               />
             </svg>
-            <!-- Center Label -->
             <div class="absolute inset-0 flex flex-col items-center justify-center text-center">
               <span id="ringPercentText" class="text-lg font-bold font-mono text-white tabular-nums">0%</span>
               <span class="text-[9px] font-mono text-neutral-500 uppercase tracking-widest">TODAY</span>
             </div>
           </div>
 
-          <!-- Ring Details -->
           <div class="space-y-1">
             <span class="text-xs font-mono text-neutral-500 uppercase tracking-wider">Today's Progress</span>
             <div class="text-xl font-bold font-mono text-white tabular-nums flex items-baseline gap-1">
@@ -377,7 +425,7 @@
 
       </section>
 
-      <!-- SECTION 5: 14-DAY INTERACTIVE CONSISTENCY GRID -->
+      <!-- SECTION 6: 14-DAY INTERACTIVE CONSISTENCY GRID -->
       <section id="gridSection" class="rounded-2xl border border-borderline bg-surface/80 p-5 space-y-3">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2">
@@ -399,27 +447,24 @@
           </div>
         </div>
 
-        <!-- The 14-day interactive boxes -->
         <div id="matrixGrid" class="grid grid-cols-7 sm:grid-cols-14 gap-2 pt-2">
           <!-- Populated by JavaScript -->
         </div>
 
-        <!-- Tooltip/Details bar when clicking a day in the matrix -->
         <div id="dayDetailBar" class="hidden mt-3 p-3 rounded-xl bg-pitch border border-borderline text-xs flex items-center justify-between">
           <div class="flex items-center gap-2">
             <i data-lucide="info" class="w-3.5 h-3.5 text-neutral-400"></i>
             <span id="dayDetailText" class="text-neutral-300">Selected Day Details</span>
           </div>
-          <button onclick="closeDayDetail()" class="text-neutral-500 hover:text-white">
+          <button onclick="window.winterArc.closeDayDetail()" class="text-neutral-500 hover:text-white">
             <i data-lucide="x" class="w-3.5 h-3.5"></i>
           </button>
         </div>
       </section>
 
-      <!-- SECTION 6: DAILY PROTOCOLS CHECKLIST (CORE INTERACTION) -->
+      <!-- SECTION 7: DAILY PROTOCOLS CHECKLIST -->
       <section class="rounded-2xl border border-borderline bg-surface/80 p-5 sm:p-6 space-y-5">
         
-        <!-- Checklist Header -->
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-borderline pb-4">
           <div>
             <div class="flex items-center gap-2">
@@ -431,37 +476,34 @@
               </span>
             </div>
             <p class="text-xs text-neutral-400 mt-0.5">
-              Standard non-negotiables for the Winter Arc. Mark them as executed.
+              Standard non-negotiables for the Winter Arc. Mark them as executed or schedule into Google Calendar.
             </p>
           </div>
 
-          <!-- Controls: Filter segmented control & Add button -->
           <div class="flex items-center gap-2 flex-wrap">
-            <!-- Filter Tabs -->
             <div class="flex items-center p-1 bg-pitch rounded-lg border border-borderline text-xs font-medium">
               <button 
                 id="filterAll" 
-                onclick="setFilter('all')" 
+                onclick="window.winterArc.setFilter('all')" 
                 class="px-2.5 py-1 rounded-md text-white bg-surface-highlight font-mono transition-colors">
                 All
               </button>
               <button 
                 id="filterPending" 
-                onclick="setFilter('pending')" 
+                onclick="window.winterArc.setFilter('pending')" 
                 class="px-2.5 py-1 rounded-md text-neutral-400 hover:text-white font-mono transition-colors">
                 Pending
               </button>
               <button 
                 id="filterCompleted" 
-                onclick="setFilter('completed')" 
+                onclick="window.winterArc.setFilter('completed')" 
                 class="px-2.5 py-1 rounded-md text-neutral-400 hover:text-white font-mono transition-colors">
                 Done
               </button>
             </div>
 
-            <!-- Add Protocol Button -->
             <button 
-              onclick="openAddModal()" 
+              onclick="window.winterArc.openAddModal()" 
               class="h-8 px-3 rounded-lg bg-white hover:bg-neutral-200 text-black text-xs font-semibold flex items-center gap-1.5 transition-all active:scale-95 shadow">
               <i data-lucide="plus" class="w-3.5 h-3.5"></i>
               <span>Add Protocol</span>
@@ -469,30 +511,27 @@
           </div>
         </div>
 
-        <!-- Habits List Container -->
         <div id="habitsList" class="space-y-2.5">
           <!-- Populated by JavaScript -->
         </div>
 
-        <!-- Empty State (When filtered out or empty) -->
         <div id="emptyState" class="hidden py-10 text-center space-y-2">
           <i data-lucide="check-check" class="w-8 h-8 text-neutral-600 mx-auto"></i>
           <p id="emptyStateText" class="text-sm font-medium text-neutral-400">All protocols completed for today.</p>
         </div>
 
-        <!-- Quick Bulk Actions Footer -->
         <div class="pt-2 flex flex-wrap items-center justify-between gap-3 text-xs text-neutral-500 font-mono">
           <div class="flex items-center gap-3">
-            <button onclick="markAllComplete()" class="hover:text-emerald-400 transition-colors flex items-center gap-1.5">
+            <button onclick="window.winterArc.markAllComplete()" class="hover:text-emerald-400 transition-colors flex items-center gap-1.5">
               <i data-lucide="check-circle" class="w-3.5 h-3.5"></i> Mark All Complete
             </button>
             <span>·</span>
-            <button onclick="uncheckAllToday()" class="hover:text-neutral-300 transition-colors flex items-center gap-1.5">
+            <button onclick="window.winterArc.uncheckAllToday()" class="hover:text-neutral-300 transition-colors flex items-center gap-1.5">
               <i data-lucide="circle" class="w-3.5 h-3.5"></i> Uncheck All
             </button>
           </div>
           <div class="flex items-center gap-2">
-            <span id="storageFootnote">Auto-saved to LocalStorage</span>
+            <span id="storageFootnote">Auto-saved to LocalStorage · Google Calendar Synchronized</span>
           </div>
         </div>
       </section>
@@ -520,19 +559,19 @@
               <p class="text-xs text-neutral-400">Establish a new daily discipline staple.</p>
             </div>
           </div>
-          <button onclick="closeAddModal()" class="text-neutral-500 hover:text-white p-1 rounded-lg">
+          <button onclick="window.winterArc.closeAddModal()" class="text-neutral-500 hover:text-white p-1 rounded-lg">
             <i data-lucide="x" class="w-4 h-4"></i>
           </button>
         </div>
 
-        <form id="addHabitForm" onsubmit="handleAddHabit(event)" class="space-y-4">
+        <form id="addHabitForm" onsubmit="window.winterArc.handleAddHabit(event)" class="space-y-4">
           <div>
             <label class="block text-xs font-mono text-neutral-400 uppercase tracking-wider mb-1.5">Protocol Title</label>
             <input 
               type="text" 
               id="newHabitTitle" 
               required 
-              placeholder="e.g. Read 20 Pages of Non-Fiction" 
+              placeholder="e.g. Read 20 Pages of Stoic Philosophy" 
               class="w-full px-3.5 py-2.5 rounded-xl bg-pitch border border-borderline text-white placeholder-neutral-600 text-sm focus:border-amber-500 transition-colors">
           </div>
 
@@ -560,10 +599,19 @@
             </div>
           </div>
 
+          <div>
+            <label class="block text-xs font-mono text-neutral-400 uppercase tracking-wider mb-1.5">Default Calendar Block Time (Opt.)</label>
+            <input 
+              type="time" 
+              id="newHabitTime" 
+              value="07:00"
+              class="w-full px-3.5 py-2 rounded-xl bg-pitch border border-borderline text-white text-xs focus:border-amber-500">
+          </div>
+
           <div class="pt-2 flex items-center justify-end gap-3">
             <button 
               type="button" 
-              onclick="closeAddModal()" 
+              onclick="window.winterArc.closeAddModal()" 
               class="px-4 py-2 rounded-xl border border-borderline text-xs font-medium text-neutral-300 hover:bg-surface-highlight">
               Cancel
             </button>
@@ -587,15 +635,15 @@
             </div>
             <div>
               <h3 class="text-base font-bold text-white">Edit Protocol</h3>
-              <p class="text-xs text-neutral-400">Modify protocol requirements.</p>
+              <p class="text-xs text-neutral-400">Modify protocol requirements and schedule time.</p>
             </div>
           </div>
-          <button onclick="closeEditModal()" class="text-neutral-500 hover:text-white p-1 rounded-lg">
+          <button onclick="window.winterArc.closeEditModal()" class="text-neutral-500 hover:text-white p-1 rounded-lg">
             <i data-lucide="x" class="w-4 h-4"></i>
           </button>
         </div>
 
-        <form id="editHabitForm" onsubmit="handleEditHabit(event)" class="space-y-4">
+        <form id="editHabitForm" onsubmit="window.winterArc.handleEditHabit(event)" class="space-y-4">
           <input type="hidden" id="editHabitId">
           <div>
             <label class="block text-xs font-mono text-neutral-400 uppercase tracking-wider mb-1.5">Protocol Title</label>
@@ -621,7 +669,7 @@
               </select>
             </div>
             <div>
-              <label class="block text-xs font-mono text-neutral-400 uppercase tracking-wider mb-1.5">Target / Time</label>
+              <label class="block text-xs font-mono text-neutral-400 uppercase tracking-wider mb-1.5">Target / Goal</label>
               <input 
                 type="text" 
                 id="editHabitTarget" 
@@ -629,10 +677,18 @@
             </div>
           </div>
 
+          <div>
+            <label class="block text-xs font-mono text-neutral-400 uppercase tracking-wider mb-1.5">Calendar Block Time</label>
+            <input 
+              type="time" 
+              id="editHabitTime" 
+              class="w-full px-3.5 py-2 rounded-xl bg-pitch border border-borderline text-white text-xs focus:border-amber-500">
+          </div>
+
           <div class="pt-2 flex items-center justify-between">
             <button 
               type="button" 
-              onclick="deleteHabitFromEdit()" 
+              onclick="window.winterArc.deleteHabitFromEdit()" 
               class="px-3 py-2 rounded-xl text-xs font-medium text-red-400 hover:bg-red-950/30 flex items-center gap-1.5">
               <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
               Delete
@@ -640,7 +696,7 @@
             <div class="flex items-center gap-2">
               <button 
                 type="button" 
-                onclick="closeEditModal()" 
+                onclick="window.winterArc.closeEditModal()" 
                 class="px-4 py-2 rounded-xl border border-borderline text-xs font-medium text-neutral-300 hover:bg-surface-highlight">
                 Cancel
               </button>
@@ -669,14 +725,144 @@
         </div>
         <div class="pt-2 flex items-center justify-end gap-3">
           <button 
-            onclick="closeResetModal()" 
+            onclick="window.winterArc.closeResetModal()" 
             class="px-4 py-2 rounded-xl border border-borderline text-xs font-medium text-neutral-300 hover:bg-surface-highlight">
             Cancel
           </button>
           <button 
-            onclick="executeResetToday()" 
+            onclick="window.winterArc.executeResetToday()" 
             class="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-semibold">
             Yes, Reset Today
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL 4: CONFIRM GOOGLE CALENDAR SYNC (MANDATORY CONFIRMATION) -->
+    <div id="calendarSyncModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+      <div class="bg-surface border border-borderline w-full max-w-md rounded-2xl p-6 shadow-2xl space-y-5 animate-in fade-in zoom-in-95 duration-150">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-500 flex items-center justify-center shrink-0">
+            <i data-lucide="calendar-plus" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 class="text-base font-bold text-white">Sync Protocols to Google Calendar</h3>
+            <p class="text-xs text-neutral-400">Review the schedule before time-blocking your day.</p>
+          </div>
+        </div>
+
+        <div class="space-y-2">
+          <div class="text-xs text-neutral-300">
+            The following <span id="syncHabitsCountText" class="font-bold text-amber-400">protocols</span> will be created as calendar events on your primary Google Calendar:
+          </div>
+          <div id="syncHabitsPreviewList" class="max-h-48 overflow-y-auto rounded-xl bg-pitch p-3 border border-borderline space-y-1">
+            <!-- Preview list injected dynamically -->
+          </div>
+          <p class="text-[11px] text-neutral-500 italic">
+            Each event will be set to a 45-minute focus block with standard notifications.
+          </p>
+        </div>
+
+        <div class="pt-2 flex items-center justify-end gap-3">
+          <button 
+            onclick="window.winterArc.closeCalendarSyncModal()" 
+            class="px-4 py-2 rounded-xl border border-borderline text-xs font-medium text-neutral-300 hover:bg-surface-highlight">
+            Cancel
+          </button>
+          <button 
+            onclick="window.winterArc.executeCalendarSync()" 
+            class="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-black text-xs font-semibold flex items-center gap-1.5 shadow-md shadow-amber-500/20">
+            <i data-lucide="check" class="w-3.5 h-3.5"></i>
+            Confirm & Add to Calendar
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL 5: SCHEDULE SINGLE PROTOCOL TO CALENDAR -->
+    <div id="singleScheduleModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+      <div class="bg-surface border border-borderline w-full max-w-sm rounded-2xl p-6 shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-150">
+        <div class="flex items-center gap-2">
+          <div class="p-2 rounded-lg bg-neutral-900 border border-borderline text-amber-500">
+            <i data-lucide="clock" class="w-4 h-4"></i>
+          </div>
+          <div>
+            <h3 class="text-base font-bold text-white">Schedule Protocol</h3>
+            <p id="singleScheduleTitle" class="text-xs text-neutral-400 truncate max-w-[220px]">Protocol Title</p>
+          </div>
+        </div>
+
+        <form onsubmit="window.winterArc.executeScheduleSingleHabit(event)" class="space-y-3">
+          <div>
+            <label class="block text-xs font-mono text-neutral-400 uppercase tracking-wider mb-1">Date</label>
+            <input 
+              type="date" 
+              id="singleScheduleDate" 
+              required 
+              class="w-full px-3 py-2 rounded-xl bg-pitch border border-borderline text-white text-xs focus:border-amber-500">
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="block text-xs font-mono text-neutral-400 uppercase tracking-wider mb-1">Start Time</label>
+              <input 
+                type="time" 
+                id="singleScheduleTime" 
+                required 
+                class="w-full px-3 py-2 rounded-xl bg-pitch border border-borderline text-white text-xs focus:border-amber-500">
+            </div>
+            <div>
+              <label class="block text-xs font-mono text-neutral-400 uppercase tracking-wider mb-1">Duration</label>
+              <select 
+                id="singleScheduleDuration" 
+                class="w-full px-3 py-2 rounded-xl bg-pitch border border-borderline text-white text-xs focus:border-amber-500">
+                <option value="30">30 mins</option>
+                <option value="45" selected>45 mins</option>
+                <option value="60">1 hour</option>
+                <option value="90">1.5 hours</option>
+                <option value="120">2 hours</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="pt-2 flex items-center justify-end gap-2">
+            <button 
+              type="button" 
+              onclick="window.winterArc.closeScheduleHabitModal()" 
+              class="px-3.5 py-2 rounded-xl border border-borderline text-xs font-medium text-neutral-300 hover:bg-surface-highlight">
+              Cancel
+            </button>
+            <button 
+              type="submit" 
+              class="px-4 py-2 rounded-xl bg-white hover:bg-neutral-200 text-black text-xs font-semibold">
+              Add to Calendar
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- MODAL 6: CONFIRM DELETE EVENT FROM CALENDAR -->
+    <div id="deleteEventModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+      <div class="bg-surface border border-borderline w-full max-w-sm rounded-2xl p-6 shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-150">
+        <div class="w-10 h-10 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 flex items-center justify-center">
+          <i data-lucide="trash-2" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <h3 class="text-base font-bold text-white">Delete Calendar Event?</h3>
+          <p id="deleteEventText" class="text-xs text-neutral-400 mt-1 leading-relaxed">
+            Are you sure you want to remove this event from your Google Calendar?
+          </p>
+        </div>
+        <div class="pt-2 flex items-center justify-end gap-3">
+          <button 
+            onclick="window.winterArc.closeDeleteEventModal()" 
+            class="px-4 py-2 rounded-xl border border-borderline text-xs font-medium text-neutral-300 hover:bg-surface-highlight">
+            Cancel
+          </button>
+          <button 
+            onclick="window.winterArc.executeDeleteEvent()" 
+            class="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-semibold">
+            Delete Event
           </button>
         </div>
       </div>
@@ -685,849 +871,7 @@
     <!-- TOAST NOTIFICATION CONTAINER -->
     <div id="toastContainer" class="fixed bottom-6 right-6 z-50 pointer-events-none space-y-2"></div>
 
-    <!-- JAVASCRIPT APPLICATION LOGIC -->
-    <script>
-      /**
-       * WINTER ARC DISCIPLINE TRACKER
-       * Pure Vanilla JS + LocalStorage Persistence Engine
-       */
-
-      // 1. Initial State & Defaults
-      const STORAGE_KEY = 'winter_arc_tracker_v1';
-
-      const DEFAULT_HABITS = [
-        { id: 'hab-1', title: '05:00 AM Wakeup / Cold Start', category: 'Routine', target: '05:00 AM' },
-        { id: 'hab-2', title: 'Heavy Training / 10k Steps', category: 'Physical', target: '60+ min' },
-        { id: 'hab-3', title: 'Clean Nutrition (Zero Refined Sugar)', category: 'Nutrition', target: '100% Clean' },
-        { id: 'hab-4', title: 'Deep Work / Coding & Problem Solving (2+ hrs)', category: 'Focus', target: '2.5 hrs' },
-        { id: 'hab-5', title: 'No Screen Time 1 hr Before Sleep', category: 'Recovery', target: '9:30 PM' },
-      ];
-
-      const QUOTES = [
-        { text: "We don't rise to the level of our expectations, we fall to the level of our training.", author: "Archilochus" },
-        { text: "No man is free who is not master of himself.", author: "Epictetus" },
-        { text: "Don't count the days, make the days count.", author: "Muhammad Ali" },
-        { text: "The discipline you learn and character you build from the carving and sculpting of yourself will stay with you your entire life.", author: "David Goggins" },
-        { text: "Discipline equals freedom.", author: "Jocko Willink" },
-        { text: "You have power over your mind - not outside events. Realize this, and you will find strength.", author: "Marcus Aurelius" },
-        { text: "He who has a why to live can bear almost any how.", author: "Friedrich Nietzsche" },
-        { text: "There is nothing outside of yourself that can ever enable you to get better, stronger, or faster. Everything is within.", author: "Miyamoto Musashi" },
-        { text: "It is not that we have a short time to live, but that we waste a lot of it.", author: "Seneca" },
-        { text: "Great things come from hard work and perseverance. No excuses.", author: "Kobe Bryant" },
-        { text: "First say to yourself what you would be; and then do what you have to do.", author: "Epictetus" },
-        { text: "Suffer the pain of discipline or suffer the pain of regret.", author: "Jim Rohn" },
-        { text: "In the depth of winter, I finally learned that within me there lay an invincible summer.", author: "Albert Camus" },
-      ];
-
-      let state = {
-        habits: [...DEFAULT_HABITS],
-        history: {}, // Key: YYYY-MM-DD -> Array of completed habit IDs
-        soundEnabled: true,
-        monkMode: false,
-        activeFilter: 'all', // 'all' | 'pending' | 'completed'
-        quoteIndex: 0
-      };
-
-      // 2. Helper Functions
-      function getTodayKey() {
-        const d = new Date();
-        const year = d.getFullYear();
-        const month = String(d.getMonth() + 1).padStart(2, '0');
-        const day = String(d.getDate()).padStart(2, '0');
-        return `${year}-${month}-${day}`;
-      }
-
-      function getCompletedTodayIds() {
-        const todayKey = getTodayKey();
-        return state.history[todayKey] || [];
-      }
-
-      function isHabitCompletedToday(habitId) {
-        return getCompletedTodayIds().includes(habitId);
-      }
-
-      // Audio Tactile Feedback via Web Audio API Synthesizer
-      function playTactileSound(type = 'check') {
-        if (!state.soundEnabled) return;
-        try {
-          const AudioContext = window.AudioContext || window.webkitAudioContext;
-          if (!AudioContext) return;
-          const ctx = new AudioContext();
-          
-          if (type === 'check') {
-            const osc = ctx.createOscillator();
-            const gain = ctx.createGain();
-            osc.connect(gain);
-            gain.connect(ctx.destination);
-            osc.type = 'sine';
-            osc.frequency.setValueAtTime(587.33, ctx.currentTime); // D5
-            osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.08); // A5
-            gain.gain.setValueAtTime(0.12, ctx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.12);
-            osc.start();
-            osc.stop(ctx.currentTime + 0.13);
-          } else if (type === 'uncheck') {
-            const osc = ctx.createOscillator();
-            const gain = ctx.createGain();
-            osc.connect(gain);
-            gain.connect(ctx.destination);
-            osc.type = 'triangle';
-            osc.frequency.setValueAtTime(440, ctx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(330, ctx.currentTime + 0.07);
-            gain.gain.setValueAtTime(0.08, ctx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.08);
-            osc.start();
-            osc.stop(ctx.currentTime + 0.09);
-          } else if (type === 'conquered') {
-            // Victorious ascending chord
-            [523.25, 659.25, 783.99, 1046.50].forEach((freq, idx) => {
-              const o = ctx.createOscillator();
-              const g = ctx.createGain();
-              o.type = 'sine';
-              o.frequency.value = freq;
-              g.gain.setValueAtTime(0.09, ctx.currentTime + idx * 0.06);
-              g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35 + idx * 0.06);
-              o.connect(g);
-              g.connect(ctx.destination);
-              o.start(ctx.currentTime + idx * 0.06);
-              o.stop(ctx.currentTime + 0.4 + idx * 0.06);
-            });
-          }
-        } catch (e) {
-          // Audio muted or not allowed
-        }
-      }
-
-      function showToast(message, type = 'info') {
-        const container = document.getElementById('toastContainer');
-        const toast = document.createElement('div');
-        toast.className = `px-4 py-2.5 rounded-xl border text-xs font-mono font-medium shadow-xl backdrop-blur-md flex items-center gap-2 transform transition-all duration-300 pointer-events-auto ${
-          type === 'success' 
-            ? 'bg-emerald-950/90 border-emerald-500/40 text-emerald-200' 
-            : type === 'warning' 
-            ? 'bg-amber-950/90 border-amber-500/40 text-amber-200'
-            : 'bg-surface/90 border-borderline text-neutral-200'
-        }`;
-        
-        const iconName = type === 'success' ? 'check' : type === 'warning' ? 'alert-circle' : 'info';
-        toast.innerHTML = `<i data-lucide="${iconName}" class="w-3.5 h-3.5"></i><span>${message}</span>`;
-        container.appendChild(toast);
-        lucide.createIcons();
-
-        setTimeout(() => {
-          toast.classList.add('opacity-0', 'translate-y-2');
-          setTimeout(() => toast.remove(), 300);
-        }, 2600);
-      }
-
-      // 3. Storage
-      function loadStorage() {
-        try {
-          const raw = localStorage.getItem(STORAGE_KEY);
-          if (raw) {
-            const parsed = JSON.parse(raw);
-            if (parsed.habits && Array.isArray(parsed.habits)) state.habits = parsed.habits;
-            if (parsed.history && typeof parsed.history === 'object') state.history = parsed.history;
-            if (typeof parsed.soundEnabled === 'boolean') state.soundEnabled = parsed.soundEnabled;
-            if (typeof parsed.monkMode === 'boolean') state.monkMode = parsed.monkMode;
-          }
-        } catch (e) {
-          console.error('Failed to load storage:', e);
-        }
-      }
-
-      function saveStorage() {
-        try {
-          localStorage.setItem(STORAGE_KEY, JSON.stringify({
-            habits: state.habits,
-            history: state.history,
-            soundEnabled: state.soundEnabled,
-            monkMode: state.monkMode
-          }));
-        } catch (e) {
-          console.error('Failed to save storage:', e);
-        }
-      }
-
-      // 4. Countdown Timer Engine
-      function initCountdown() {
-        function updateTimer() {
-          const now = new Date();
-          
-          // Winter Arc Target: January 1 of the next year if we are in Oct/Nov/Dec (month 9, 10, 11)
-          let targetYear = now.getFullYear();
-          if (now.getMonth() >= 9) { // Oct (9), Nov (10), Dec (11)
-            targetYear = now.getFullYear() + 1;
-          }
-          const targetDate = new Date(targetYear, 0, 1, 0, 0, 0); // Jan 1, 00:00:00
-          const diffMs = targetDate - now;
-
-          if (diffMs <= 0) {
-            document.getElementById('clockDays').innerText = '00';
-            document.getElementById('clockHours').innerText = '00';
-            document.getElementById('clockMinutes').innerText = '00';
-            document.getElementById('clockSeconds').innerText = '00';
-            document.getElementById('arcPercentText').innerText = '100%';
-            document.getElementById('arcDaysRemaining').innerText = 'Arc Conquered!';
-            document.getElementById('arcProgressBar').style.width = '100%';
-            return;
-          }
-
-          const seconds = Math.floor((diffMs / 1000) % 60);
-          const minutes = Math.floor((diffMs / 1000 / 60) % 60);
-          const hours = Math.floor((diffMs / (1000 * 60 * 60)) % 24);
-          const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-
-          document.getElementById('clockDays').innerText = String(days).padStart(2, '0');
-          document.getElementById('clockHours').innerText = String(hours).padStart(2, '0');
-          document.getElementById('clockMinutes').innerText = String(minutes).padStart(2, '0');
-          document.getElementById('clockSeconds').innerText = String(seconds).padStart(2, '0');
-          document.getElementById('arcDaysRemaining').innerText = `${days} Days Remaining`;
-
-          // Winter Arc total span: Oct 1 to Jan 1 = 92 days (approx 7,948,800 seconds)
-          const arcStartDate = new Date(targetYear - 1, 9, 1, 0, 0, 0); // Oct 1
-          const totalArcMs = targetDate - arcStartDate;
-          const elapsedMs = Math.max(0, now - arcStartDate);
-          const arcProgressPercent = Math.min(100, Math.max(0, (elapsedMs / totalArcMs) * 100));
-
-          document.getElementById('arcPercentText').innerText = `${arcProgressPercent.toFixed(1)}%`;
-          document.getElementById('arcProgressBar').style.width = `${arcProgressPercent}%`;
-
-          // Arc Day badge e.g. "Day 1 of 92"
-          const arcDayNumber = Math.min(92, Math.max(1, Math.floor(elapsedMs / (1000 * 60 * 60 * 24)) + 1));
-          document.getElementById('arcDayBadge').innerText = `DAY ${arcDayNumber} OF 92`;
-        }
-
-        updateTimer();
-        setInterval(updateTimer, 1000);
-      }
-
-      // 5. Quote Randomizer
-      function renderQuote() {
-        const q = QUOTES[state.quoteIndex % QUOTES.length];
-        document.getElementById('quoteText').innerText = `"${q.text}"`;
-        document.getElementById('quoteAuthor').innerText = `— ${q.author}`;
-      }
-
-      function shuffleQuote() {
-        state.quoteIndex = (state.quoteIndex + 1) % QUOTES.length;
-        renderQuote();
-        playTactileSound('uncheck');
-      }
-
-      // 6. Streak & Consistency Matrix Calculations
-      function computeStreakAndStats() {
-        const todayKey = getTodayKey();
-        const completedToday = getCompletedTodayIds();
-        const totalHabits = state.habits.length;
-        
-        let perfectStreak = 0;
-        let totalConqueredDays = 0;
-        let totalCompletions = 0;
-
-        // Count all historic completions
-        Object.entries(state.history).forEach(([dateStr, completedIds]) => {
-          if (Array.isArray(completedIds)) {
-            totalCompletions += completedIds.length;
-            if (totalHabits > 0 && completedIds.length >= totalHabits) {
-              totalConqueredDays++;
-            }
-          }
-        });
-
-        // Compute current consecutive streak ending today or yesterday
-        // Check days backwards
-        const checkDate = new Date();
-        // If today is 100%, streak starts with today. If today not yet 100%, check if yesterday was 100%
-        const isTodayFull = totalHabits > 0 && completedToday.length >= totalHabits;
-        
-        let d = new Date(checkDate);
-        if (!isTodayFull) {
-          // Check from yesterday
-          d.setDate(d.getDate() - 1);
-        }
-
-        while (true) {
-          const y = d.getFullYear();
-          const m = String(d.getMonth() + 1).padStart(2, '0');
-          const day = String(d.getDate()).padStart(2, '0');
-          const dateKey = `${y}-${m}-${day}`;
-          
-          const dayDone = state.history[dateKey] || [];
-          if (totalHabits > 0 && dayDone.length >= totalHabits) {
-            perfectStreak++;
-            d.setDate(d.getDate() - 1);
-          } else {
-            break;
-          }
-        }
-
-        document.getElementById('currentStreakCount').innerText = perfectStreak;
-        document.getElementById('totalConqueredCount').innerText = totalConqueredDays;
-        document.getElementById('totalCompletionsCount').innerText = totalCompletions;
-
-        // Update Circular Progress Ring
-        const ringFraction = totalHabits > 0 ? completedToday.length / totalHabits : 0;
-        const ringPercent = Math.round(ringFraction * 100);
-        const circumference = 2 * Math.PI * 40; // 251.32
-        const offset = circumference - (ringFraction * circumference);
-
-        const circle = document.getElementById('progressRing');
-        circle.style.strokeDashoffset = offset;
-        
-        if (ringPercent === 100) {
-          circle.setAttribute('stroke', '#10b981'); // Emerald
-        } else if (ringPercent > 0) {
-          circle.setAttribute('stroke', '#f59e0b'); // Amber
-        } else {
-          circle.setAttribute('stroke', '#383842'); // Neutral
-        }
-
-        document.getElementById('ringPercentText').innerText = `${ringPercent}%`;
-        document.getElementById('ringFractionText').innerText = `${completedToday.length}/${totalHabits}`;
-
-        const statusMsg = document.getElementById('ringStatusMessage');
-        if (ringPercent === 100) {
-          statusMsg.innerHTML = '<span class="text-emerald-400 font-semibold flex items-center gap-1"><i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i> Arc Day Conquered!</span>';
-        } else if (completedToday.length === 0) {
-          statusMsg.innerText = 'Begin your first morning protocol.';
-        } else {
-          const left = totalHabits - completedToday.length;
-          statusMsg.innerText = `${left} protocol${left > 1 ? 's' : ''} left to conquer today.`;
-        }
-      }
-
-      // 7. Render 14-Day Consistency Matrix
-      function renderMatrixGrid() {
-        const container = document.getElementById('matrixGrid');
-        container.innerHTML = '';
-        const todayKey = getTodayKey();
-        const totalHabits = state.habits.length;
-
-        // Show last 14 days up to today
-        const days = [];
-        for (let i = 13; i >= 0; i--) {
-          const d = new Date();
-          d.setDate(d.getDate() - i);
-          const y = d.getFullYear();
-          const m = String(d.getMonth() + 1).padStart(2, '0');
-          const day = String(d.getDate()).padStart(2, '0');
-          const key = `${y}-${m}-${day}`;
-          const dayName = d.toLocaleDateString('en-US', { weekday: 'narrow' });
-          const dayNum = d.getDate();
-          days.push({ key, dayName, dayNum, isToday: key === todayKey, fullDate: d });
-        }
-
-        days.forEach(day => {
-          const completed = state.history[day.key] || [];
-          const count = completed.length;
-          const isFull = totalHabits > 0 && count >= totalHabits;
-          const isPartial = count > 0 && !isFull;
-
-          const cell = document.createElement('button');
-          cell.type = 'button';
-          cell.className = `flex flex-col items-center justify-center p-2 rounded-xl border transition-all text-center group relative min-h-[58px] ${
-            day.isToday ? 'border-amber-500/80 bg-neutral-900 shadow-md ring-1 ring-amber-500/30' : 'border-borderline bg-pitch hover:border-neutral-700'
-          }`;
-
-          let dotClass = 'bg-neutral-800';
-          if (isFull) dotClass = 'bg-emerald-500 shadow-sm shadow-emerald-500/50';
-          else if (isPartial) dotClass = 'bg-amber-500';
-
-          cell.innerHTML = `
-            <span class="text-[10px] font-mono text-neutral-500 uppercase leading-none mb-1">${day.dayName}</span>
-            <span class="text-xs font-mono font-bold ${day.isToday ? 'text-amber-400' : 'text-neutral-300'}">${day.dayNum}</span>
-            <span class="w-1.5 h-1.5 rounded-full ${dotClass} mt-1.5 transition-transform group-hover:scale-125"></span>
-          `;
-
-          cell.onclick = () => {
-            const bar = document.getElementById('dayDetailBar');
-            const text = document.getElementById('dayDetailText');
-            bar.classList.remove('hidden');
-            const formatted = day.fullDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-            text.innerHTML = `<span class="font-mono text-white font-semibold">${formatted}</span>: <span class="${isFull ? 'text-emerald-400 font-bold' : isPartial ? 'text-amber-400' : 'text-neutral-400'}">${count}/${totalHabits} protocols completed</span> ${day.isToday ? '(Today)' : ''}`;
-            lucide.createIcons();
-          };
-
-          container.appendChild(cell);
-        });
-      }
-
-      function closeDayDetail() {
-        document.getElementById('dayDetailBar').classList.add('hidden');
-      }
-
-      // 8. Habit List Rendering & Interactions
-      function renderHabits() {
-        const container = document.getElementById('habitsList');
-        const emptyState = document.getElementById('emptyState');
-        const emptyText = document.getElementById('emptyStateText');
-        const completedIds = getCompletedTodayIds();
-        
-        let filteredHabits = state.habits.filter(h => {
-          const isDone = completedIds.includes(h.id);
-          if (state.activeFilter === 'pending') return !isDone;
-          if (state.activeFilter === 'completed') return isDone;
-          return true;
-        });
-
-        // Update active count badge
-        document.getElementById('activeHabitsCounter').innerText = `${completedIds.length}/${state.habits.length} Done`;
-
-        if (filteredHabits.length === 0) {
-          container.innerHTML = '';
-          emptyState.classList.remove('hidden');
-          if (state.activeFilter === 'completed') {
-            emptyText.innerText = 'No completed protocols yet today. Get to work.';
-          } else if (state.activeFilter === 'pending') {
-            emptyText.innerText = 'All protocols conquered! Perfect execution today.';
-          } else {
-            emptyText.innerText = 'No habits configured. Add your first protocol above.';
-          }
-          lucide.createIcons();
-          return;
-        }
-
-        emptyState.classList.add('hidden');
-        container.innerHTML = '';
-
-        filteredHabits.forEach(habit => {
-          const isDone = completedIds.includes(habit.id);
-
-          const row = document.createElement('div');
-          row.className = `group flex items-center justify-between p-3.5 sm:p-4 rounded-xl border transition-all ${
-            isDone 
-              ? 'bg-pitch/60 border-borderline/50 opacity-80' 
-              : 'bg-pitch border-borderline hover:border-neutral-700 hover:bg-surface-highlight/30'
-          }`;
-
-          // Left: Interactive check hitbox & title
-          const leftDiv = document.createElement('div');
-          leftDiv.className = 'flex items-center gap-3.5 flex-1 min-w-0 cursor-pointer select-none';
-          leftDiv.onclick = (e) => {
-            // Avoid triggering when clicking buttons
-            if (e.target.closest('button')) return;
-            toggleHabit(habit.id);
-          };
-
-          // Checkbox Icon Button (Min 44x44 hitbox)
-          const checkBtn = document.createElement('button');
-          checkBtn.type = 'button';
-          checkBtn.className = `min-w-[44px] min-h-[44px] -ml-2 flex items-center justify-center rounded-lg transition-transform active:scale-90`;
-          checkBtn.innerHTML = `
-            <div class="w-5 h-5 rounded-md border flex items-center justify-center transition-colors ${
-              isDone 
-                ? 'bg-emerald-500 border-emerald-500 text-black shadow-sm shadow-emerald-500/40' 
-                : 'border-neutral-700 bg-neutral-900 group-hover:border-neutral-500 text-transparent'
-            }">
-              <i data-lucide="check" class="w-3.5 h-3.5 stroke-[3] ${isDone ? 'opacity-100' : 'opacity-0'}"></i>
-            </div>
-          `;
-
-          // Habit Title & Unboxed Metadata
-          const textDiv = document.createElement('div');
-          textDiv.className = 'flex flex-col min-w-0 pr-2';
-          
-          textDiv.innerHTML = `
-            <span class="text-sm font-semibold truncate transition-colors strike-line ${
-              isDone ? 'text-neutral-500 strike-completed line-through' : 'text-neutral-100'
-            }">
-              ${escapeHtml(habit.title)}
-            </span>
-            <div class="flex items-center gap-2 text-[11px] text-neutral-500 font-mono mt-0.5">
-              <span>${escapeHtml(habit.category || 'Discipline')}</span>
-              ${habit.target ? `<span aria-hidden="true">·</span><span>${escapeHtml(habit.target)}</span>` : ''}
-            </div>
-          `;
-
-          leftDiv.appendChild(checkBtn);
-          leftDiv.appendChild(textDiv);
-
-          // Right: Action buttons (Edit, Delete)
-          const rightDiv = document.createElement('div');
-          rightDiv.className = 'flex items-center gap-1 shrink-0 opacity-80 sm:opacity-0 group-hover:opacity-100 transition-opacity';
-          
-          rightDiv.innerHTML = `
-            <button 
-              type="button" 
-              onclick="openEditModal('${habit.id}')" 
-              title="Edit Protocol"
-              class="w-8 h-8 rounded-lg text-neutral-400 hover:text-white hover:bg-neutral-800 flex items-center justify-center transition-colors">
-              <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
-            </button>
-            <button 
-              type="button" 
-              onclick="deleteHabit('${habit.id}')" 
-              title="Delete Protocol"
-              class="w-8 h-8 rounded-lg text-neutral-400 hover:text-red-400 hover:bg-red-950/30 flex items-center justify-center transition-colors">
-              <i data-lucide="trash" class="w-3.5 h-3.5"></i>
-            </button>
-          `;
-
-          row.appendChild(leftDiv);
-          row.appendChild(rightDiv);
-          container.appendChild(row);
-        });
-
-        lucide.createIcons();
-        updateMonkModeBanner();
-      }
-
-      function toggleHabit(habitId) {
-        const todayKey = getTodayKey();
-        if (!state.history[todayKey]) state.history[todayKey] = [];
-        const list = state.history[todayKey];
-        const idx = list.indexOf(habitId);
-
-        if (idx === -1) {
-          list.push(habitId);
-          // Check if now all habits are done
-          if (list.length >= state.habits.length) {
-            playTactileSound('conquered');
-            showToast('Day Conquered! 100% Protocols Executed.', 'success');
-          } else {
-            playTactileSound('check');
-            showToast('Protocol Executed', 'success');
-          }
-        } else {
-          list.splice(idx, 1);
-          playTactileSound('uncheck');
-        }
-
-        saveStorage();
-        renderHabits();
-        computeStreakAndStats();
-        renderMatrixGrid();
-      }
-
-      function setFilter(filterType) {
-        state.activeFilter = filterType;
-        ['filterAll', 'filterPending', 'filterCompleted'].forEach(id => {
-          const btn = document.getElementById(id);
-          btn.className = 'px-2.5 py-1 rounded-md text-neutral-400 hover:text-white font-mono transition-colors';
-        });
-
-        const activeId = filterType === 'all' ? 'filterAll' : filterType === 'pending' ? 'filterPending' : 'filterCompleted';
-        document.getElementById(activeId).className = 'px-2.5 py-1 rounded-md text-white bg-surface-highlight font-mono transition-colors';
-
-        renderHabits();
-      }
-
-      function markAllComplete() {
-        const todayKey = getTodayKey();
-        state.history[todayKey] = state.habits.map(h => h.id);
-        saveStorage();
-        playTactileSound('conquered');
-        showToast('All daily protocols checked off!', 'success');
-        renderHabits();
-        computeStreakAndStats();
-        renderMatrixGrid();
-      }
-
-      function uncheckAllToday() {
-        const todayKey = getTodayKey();
-        state.history[todayKey] = [];
-        saveStorage();
-        playTactileSound('uncheck');
-        showToast('Protocols cleared for today', 'info');
-        renderHabits();
-        computeStreakAndStats();
-        renderMatrixGrid();
-      }
-
-      // 9. Add & Edit Habit Modals
-      function openAddModal() {
-        document.getElementById('addModal').classList.remove('hidden');
-        document.getElementById('newHabitTitle').focus();
-        lucide.createIcons();
-      }
-
-      function closeAddModal() {
-        document.getElementById('addModal').classList.add('hidden');
-        document.getElementById('addHabitForm').reset();
-      }
-
-      function handleAddHabit(e) {
-        e.preventDefault();
-        const title = document.getElementById('newHabitTitle').value.trim();
-        const category = document.getElementById('newHabitCategory').value;
-        const target = document.getElementById('newHabitTarget').value.trim();
-
-        if (!title) return;
-
-        const newHabit = {
-          id: 'hab-' + Date.now(),
-          title,
-          category,
-          target
-        };
-
-        state.habits.push(newHabit);
-        saveStorage();
-        closeAddModal();
-        playTactileSound('check');
-        showToast('New discipline protocol established', 'success');
-        renderHabits();
-        computeStreakAndStats();
-        renderMatrixGrid();
-      }
-
-      function openEditModal(habitId) {
-        const habit = state.habits.find(h => h.id === habitId);
-        if (!habit) return;
-
-        document.getElementById('editHabitId').value = habit.id;
-        document.getElementById('editHabitTitle').value = habit.title;
-        document.getElementById('editHabitCategory').value = habit.category || 'Physical';
-        document.getElementById('editHabitTarget').value = habit.target || '';
-
-        document.getElementById('editModal').classList.remove('hidden');
-        document.getElementById('editHabitTitle').focus();
-        lucide.createIcons();
-      }
-
-      function closeEditModal() {
-        document.getElementById('editModal').classList.add('hidden');
-        document.getElementById('editHabitForm').reset();
-      }
-
-      function handleEditHabit(e) {
-        e.preventDefault();
-        const id = document.getElementById('editHabitId').value;
-        const habit = state.habits.find(h => h.id === id);
-        if (!habit) return;
-
-        habit.title = document.getElementById('editHabitTitle').value.trim();
-        habit.category = document.getElementById('editHabitCategory').value;
-        habit.target = document.getElementById('editHabitTarget').value.trim();
-
-        saveStorage();
-        closeEditModal();
-        playTactileSound('check');
-        showToast('Protocol updated', 'info');
-        renderHabits();
-      }
-
-      function deleteHabit(habitId) {
-        const habit = state.habits.find(h => h.id === habitId);
-        if (!habit) return;
-
-        if (confirm(`Remove "${habit.title}" from daily protocols?`)) {
-          state.habits = state.habits.filter(h => h.id !== habitId);
-          // Also remove from today's history if present
-          const todayKey = getTodayKey();
-          if (state.history[todayKey]) {
-            state.history[todayKey] = state.history[todayKey].filter(id => id !== habitId);
-          }
-          saveStorage();
-          playTactileSound('uncheck');
-          showToast('Protocol removed', 'info');
-          renderHabits();
-          computeStreakAndStats();
-          renderMatrixGrid();
-        }
-      }
-
-      function deleteHabitFromEdit() {
-        const id = document.getElementById('editHabitId').value;
-        closeEditModal();
-        deleteHabit(id);
-      }
-
-      // 10. Monk Mode (Distraction-Free Protocol Focus)
-      function toggleMonkMode() {
-        state.monkMode = !state.monkMode;
-        saveStorage();
-        applyMonkMode();
-        playTactileSound('check');
-        showToast(state.monkMode ? 'Monk Mode Engaged: Pure Focus' : 'Monk Mode Disabled', 'info');
-      }
-
-      function applyMonkMode() {
-        const btn = document.getElementById('monkModeBtn');
-        const monkBanner = document.getElementById('monkBanner');
-        const quoteSec = document.getElementById('quoteSection');
-        const statsSec = document.getElementById('statsSection');
-        const gridSec = document.getElementById('gridSection');
-
-        if (state.monkMode) {
-          btn.classList.add('bg-amber-500', 'text-black', 'border-amber-400');
-          btn.classList.remove('bg-surface', 'text-neutral-300');
-          monkBanner.classList.remove('hidden');
-          quoteSec.classList.add('hidden');
-          statsSec.classList.add('hidden');
-          gridSec.classList.add('hidden');
-          updateMonkModeBanner();
-        } else {
-          btn.classList.remove('bg-amber-500', 'text-black', 'border-amber-400');
-          btn.classList.add('bg-surface', 'text-neutral-300');
-          monkBanner.classList.add('hidden');
-          quoteSec.classList.remove('hidden');
-          statsSec.classList.remove('hidden');
-          gridSec.classList.remove('hidden');
-        }
-        lucide.createIcons();
-      }
-
-      function updateMonkModeBanner() {
-        if (!state.monkMode) return;
-        const completedIds = getCompletedTodayIds();
-        const pending = state.habits.find(h => !completedIds.includes(h.id));
-        const bannerTitle = document.getElementById('monkNextHabitTitle');
-        const checkBtn = document.getElementById('monkCheckBtn');
-
-        if (pending) {
-          bannerTitle.innerText = `Protocol: ${pending.title}`;
-          checkBtn.innerText = 'Mark Protocol Conquered';
-          checkBtn.disabled = false;
-          checkBtn.dataset.habitId = pending.id;
-        } else {
-          bannerTitle.innerText = 'All Protocols Conquered Today';
-          checkBtn.innerText = 'Day Complete';
-          checkBtn.disabled = true;
-          checkBtn.dataset.habitId = '';
-        }
-      }
-
-      function checkNextMonkHabit() {
-        const btn = document.getElementById('monkCheckBtn');
-        const habitId = btn.dataset.habitId;
-        if (habitId) {
-          toggleHabit(habitId);
-          updateMonkModeBanner();
-        }
-      }
-
-      // 11. Audio Toggle
-      function toggleSound() {
-        state.soundEnabled = !state.soundEnabled;
-        saveStorage();
-        updateSoundUI();
-        if (state.soundEnabled) playTactileSound('check');
-        showToast(state.soundEnabled ? 'Tactile Sound Enabled' : 'Muted', 'info');
-      }
-
-      function updateSoundUI() {
-        const icon = document.getElementById('soundIcon');
-        icon.setAttribute('data-lucide', state.soundEnabled ? 'volume-2' : 'volume-x');
-        lucide.createIcons();
-      }
-
-      // 12. Dropdown & Export/Import/Reset Modals
-      function toggleMenu() {
-        const menu = document.getElementById('dropdownMenu');
-        menu.classList.toggle('hidden');
-      }
-
-      // Close dropdown when clicking outside
-      document.addEventListener('click', (e) => {
-        const menu = document.getElementById('dropdownMenu');
-        const btn = document.getElementById('menuBtn');
-        if (!menu.contains(e.target) && !btn.contains(e.target)) {
-          menu.classList.add('hidden');
-        }
-      });
-
-      function confirmResetDay() {
-        document.getElementById('dropdownMenu').classList.add('hidden');
-        document.getElementById('resetModal').classList.remove('hidden');
-        lucide.createIcons();
-      }
-
-      function closeResetModal() {
-        document.getElementById('resetModal').classList.add('hidden');
-      }
-
-      function executeResetToday() {
-        const todayKey = getTodayKey();
-        state.history[todayKey] = [];
-        saveStorage();
-        closeResetModal();
-        playTactileSound('uncheck');
-        showToast("Today's checklist reset", 'warning');
-        renderHabits();
-        computeStreakAndStats();
-        renderMatrixGrid();
-      }
-
-      function exportData() {
-        document.getElementById('dropdownMenu').classList.add('hidden');
-        const exportObj = {
-          version: '1.0',
-          exportedAt: new Date().toISOString(),
-          habits: state.habits,
-          history: state.history,
-        };
-        const blob = new Blob([JSON.stringify(exportObj, null, 2)], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `winter-arc-log-${getTodayKey()}.json`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-        showToast('Habit logs exported to JSON', 'success');
-      }
-
-      function importData(event) {
-        document.getElementById('dropdownMenu').classList.add('hidden');
-        const file = event.target.files && event.target.files[0];
-        if (!file) return;
-
-        const reader = new FileReader();
-        reader.onload = function(e) {
-          try {
-            const data = JSON.parse(e.target.result);
-            if (data.habits && Array.isArray(data.habits)) {
-              state.habits = data.habits;
-            }
-            if (data.history && typeof data.history === 'object') {
-              state.history = data.history;
-            }
-            saveStorage();
-            playTactileSound('conquered');
-            showToast('Backup restored successfully!', 'success');
-            renderHabits();
-            computeStreakAndStats();
-            renderMatrixGrid();
-          } catch (err) {
-            showToast('Invalid backup JSON file', 'warning');
-          }
-        };
-        reader.readAsText(file);
-      }
-
-      function escapeHtml(str) {
-        if (!str) return '';
-        return str
-          .replace(/&/g, '&amp;')
-          .replace(/</g, '&lt;')
-          .replace(/>/g, '&gt;')
-          .replace(/"/g, '&quot;')
-          .replace(/'/g, '&#039;');
-      }
-
-      // 13. App Bootstrap
-      window.addEventListener('DOMContentLoaded', () => {
-        loadStorage();
-        
-        // Display formatted today's date in header nav
-        const d = new Date();
-        const formattedDate = d.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }).toUpperCase();
-        const dateNavEl = document.getElementById('currentDateNav');
-        if (dateNavEl) dateNavEl.innerText = formattedDate;
-
-        initCountdown();
-        renderQuote();
-        renderHabits();
-        computeStreakAndStats();
-        renderMatrixGrid();
-        updateSoundUI();
-        applyMonkMode();
-
-        lucide.createIcons();
-      });
-    </script>
+    <!-- Application Script Module -->
+    <script type="module" src="/src/app.ts"></script>
   </body>
 </html>
