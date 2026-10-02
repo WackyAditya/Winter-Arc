@@ -40,8 +40,17 @@ export async function listTodayEvents(accessToken: string): Promise<CalendarEven
   });
 
   if (!res.ok) {
-    const errorText = await res.text();
-    throw new Error(`Google Calendar API error (${res.status}): ${errorText}`);
+    let message = `Google Calendar API error (${res.status})`;
+    try {
+      const errJson = await res.json();
+      if (errJson?.error?.message) {
+        message = errJson.error.message;
+      }
+    } catch {
+      const text = await res.text();
+      if (text) message = text;
+    }
+    throw new Error(message);
   }
 
   const data = await res.json();
@@ -79,8 +88,17 @@ export async function createCalendarEvent(
   });
 
   if (!res.ok) {
-    const errorText = await res.text();
-    throw new Error(`Failed to create calendar event (${res.status}): ${errorText}`);
+    let message = `Failed to create calendar event (${res.status})`;
+    try {
+      const errJson = await res.json();
+      if (errJson?.error?.message) {
+        message = errJson.error.message;
+      }
+    } catch {
+      const text = await res.text();
+      if (text) message = text;
+    }
+    throw new Error(message);
   }
 
   return await res.json();

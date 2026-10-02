@@ -1,0 +1,51 @@
+{
+  "habits": [
+    {
+      "id": "hab-1",
+      "title": "05:00 AM Wakeup / Cold Start",
+      "category": "Routine",
+      "target": "05:00 AM",
+      "defaultTime": "05:00"
+    },
+    {
+      "id": "hab-2",
+      "title": "Heavy Training / 10k Steps",
+      "category": "Physical",
+      "target": "60+ min",
+      "defaultTime": "06:30"
+    },
+    {
+      "id": "hab-3",
+      "title": "Clean Nutrition (Zero Refined Sugar)",
+      "category": "Nutrition",
+      "target": "100% Clean",
+      "defaultTime": "12:30"
+    },
+    {
+      "id": "hab-4",
+      "title": "Deep Work / Coding & Problem Solving (2+ hrs)",
+      "category": "Focus",
+      "target": "2.5 hrs",
+      "defaultTime": "09:00"
+    },
+    {
+      "id": "hab-5",
+      "title": "No Screen Time 1 hr Before Sleep",
+      "category": "Recovery",
+      "target": "9:30 PM",
+      "defaultTime": "21:30"
+    }
+  ],
+  "history": {
+    "2026-10-02": [
+      "hab-1",
+      "hab-2",
+      "hab-3",
+      "hab-4",
+      "hab-5"
+    ]
+  },
+  "soundEnabled": true,
+  "monkMode": false,
+  "lastUpdated": "2026-10-02T06:14:16.057Z"
+}

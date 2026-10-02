@@ -247,8 +247,22 @@ function playTactileSound(type: 'check' | 'uncheck' | 'conquered' = 'check') {
   }
 }
 
-// Local Storage
-function loadStorage() {
+function updateBackendStatus(online: boolean) {
+  const pill = document.getElementById('backendStatusPill');
+  const text = document.getElementById('backendStatusText');
+  if (!pill || !text) return;
+
+  if (online) {
+    pill.className = 'flex items-center gap-1.5 px-2 py-0.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-[10px] text-emerald-400';
+    text.innerText = 'Backend Synced';
+  } else {
+    pill.className = 'flex items-center gap-1.5 px-2 py-0.5 rounded-full border border-neutral-700 bg-neutral-800 text-[10px] text-neutral-400';
+    text.innerText = 'Local Storage';
+  }
+}
+
+// Local and Remote Storage
+async function loadStorage() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
@@ -259,9 +273,41 @@ function loadStorage() {
       if (typeof parsed.monkMode === 'boolean') state.monkMode = parsed.monkMode;
     }
   } catch (e) {
-    console.error('Failed to load storage:', e);
+    console.error('Failed to load local storage:', e);
+  }
+
+  // Fetch state from server database
+  try {
+    const res = await fetch('/api/state');
+    if (res.ok) {
+      const serverState = await res.json();
+      if (Array.isArray(serverState.habits) && serverState.habits.length > 0) {
+        state.habits = serverState.habits;
+      }
+      if (serverState.history && typeof serverState.history === 'object') {
+        state.history = serverState.history;
+      }
+      if (typeof serverState.soundEnabled === 'boolean') {
+        state.soundEnabled = serverState.soundEnabled;
+      }
+      if (typeof serverState.monkMode === 'boolean') {
+        state.monkMode = serverState.monkMode;
+      }
+      updateBackendStatus(true);
+      renderHabits();
+      computeStreakAndStats();
+      renderMatrixGrid();
+      applyMonkMode();
+      updateSoundUI();
+    } else {
+      updateBackendStatus(false);
+    }
+  } catch (err) {
+    updateBackendStatus(false);
   }
 }
+
+let backendSaveTimeout: any = null;
 
 function saveStorage() {
   try {
@@ -277,6 +323,28 @@ function saveStorage() {
   } catch (e) {
     console.error('Failed to save storage:', e);
   }
+
+  // Debounced async persistence to backend API
+  if (backendSaveTimeout) clearTimeout(backendSaveTimeout);
+  backendSaveTimeout = setTimeout(async () => {
+    try {
+      const res = await fetch('/api/state', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          habits: state.habits,
+          history: state.history,
+          soundEnabled: state.soundEnabled,
+          monkMode: state.monkMode,
+        }),
+      });
+      if (res.ok) {
+        updateBackendStatus(true);
+      }
+    } catch (e) {
+      updateBackendStatus(false);
+    }
+  }, 350);
 }
 
 // Countdown Engine
@@ -1020,7 +1088,13 @@ export async function handleGoogleSignIn() {
     }
   } catch (err: any) {
     console.error('Sign in failed:', err);
-    showToast(err.message || 'Google Sign-in failed', 'warning');
+    if (err.message && err.message.includes('identity-toolkit-api-has-not-been-used')) {
+      showToast('Firebase Auth API not enabled yet in Google Cloud. Click the link in console to enable.', 'warning');
+    } else if (err.code === 'auth/popup-closed-by-user') {
+      showToast('Sign-in popup closed before completion.', 'info');
+    } else {
+      showToast(err.message || 'Google Sign-in failed', 'warning');
+    }
   }
 }
 
@@ -1494,6 +1568,85 @@ export function initApp() {
   if (window.lucide) window.lucide.createIcons();
 }
 
+export async function consultAiCoach() {
+  const btn = document.getElementById('consultCoachBtn') as HTMLButtonElement | null;
+  const outputEl = document.getElementById('aiCoachText');
+  const badgeEl = document.getElementById('aiCoachBadge');
+
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = `<i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin"></i><span>Analyzing...</span>`;
+    // @ts-ignore
+    if (window.lucide) window.lucide.createIcons();
+  }
+
+  if (badgeEl) {
+    badgeEl.innerText = 'Evaluating';
+    badgeEl.className = 'text-[10px] font-mono uppercase px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 animate-pulse';
+  }
+
+  const completedToday = getCompletedTodayIds();
+  const habitsCount = state.habits.length;
+  const pending = state.habits
+    .filter((h) => !completedToday.includes(h.id))
+    .map((h) => h.title);
+
+  // Compute days remaining
+  const now = new Date();
+  const targetYear = now.getMonth() >= 9 ? now.getFullYear() + 1 : now.getFullYear();
+  const targetDate = new Date(targetYear, 0, 1, 0, 0, 0);
+  const diffDays = Math.max(0, Math.ceil((targetDate.getTime() - now.getTime()) / (1000 * 3600 * 24)));
+
+  try {
+    const streakVal = Number(document.getElementById('currentStreakVal')?.innerText) || 0;
+    const res = await fetch('/api/ai/coach', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        streak: streakVal,
+        todayCompleted: completedToday.length,
+        todayTotal: habitsCount,
+        pendingHabits: pending,
+        daysRemaining: diffDays,
+      }),
+    });
+
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+
+    if (outputEl) {
+      outputEl.innerText = `"${data.message}"`;
+      outputEl.classList.add('text-white', 'font-medium');
+    }
+
+    if (badgeEl) {
+      const isGemini = data.source === 'gemini';
+      badgeEl.innerText = isGemini ? 'Gemini AI Verified' : 'Stoic Verdict';
+      badgeEl.className = isGemini
+        ? 'text-[10px] font-mono uppercase px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
+        : 'text-[10px] font-mono uppercase px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40';
+    }
+
+    playTactileSound('check');
+    showToast('AI Coach Verdict received', 'success');
+  } catch (err: any) {
+    if (outputEl) {
+      outputEl.innerText = `"Excuses are for the weak. You have ${pending.length} protocols left today. Execute now without hesitation."`;
+    }
+    if (badgeEl) {
+      badgeEl.innerText = 'Stoic Standby';
+      badgeEl.className = 'text-[10px] font-mono uppercase px-2 py-0.5 rounded-full bg-neutral-800 text-neutral-400 border border-neutral-700';
+    }
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = `<i data-lucide="zap" class="w-3.5 h-3.5"></i><span>Get Daily Verdict</span>`;
+      // @ts-ignore
+      if (window.lucide) window.lucide.createIcons();
+    }
+  }
+}
+
 // Attach functions to window for onclick handlers
 declare global {
   interface Window {
@@ -1504,6 +1657,7 @@ declare global {
 
 window.winterArc = {
   shuffleQuote,
+  consultAiCoach,
   toggleHabit,
   setFilter,
   markAllComplete,

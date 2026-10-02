@@ -13,23 +13,7 @@ const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 
 export const SCOPES = [
-  'https://www.googleapis.com/auth/calendar',
-  'https://www.googleapis.com/auth/calendar.acls',
-  'https://www.googleapis.com/auth/calendar.acls.readonly',
-  'https://www.googleapis.com/auth/calendar.app.created',
-  'https://www.googleapis.com/auth/calendar.calendarlist',
-  'https://www.googleapis.com/auth/calendar.calendarlist.readonly',
-  'https://www.googleapis.com/auth/calendar.calendars',
-  'https://www.googleapis.com/auth/calendar.calendars.readonly',
   'https://www.googleapis.com/auth/calendar.events',
-  'https://www.googleapis.com/auth/calendar.events.freebusy',
-  'https://www.googleapis.com/auth/calendar.events.owned',
-  'https://www.googleapis.com/auth/calendar.events.owned.readonly',
-  'https://www.googleapis.com/auth/calendar.events.public.readonly',
-  'https://www.googleapis.com/auth/calendar.events.readonly',
-  'https://www.googleapis.com/auth/calendar.freebusy',
-  'https://www.googleapis.com/auth/calendar.readonly',
-  'https://www.googleapis.com/auth/calendar.settings.readonly',
 ];
 
 const provider = new GoogleAuthProvider();
@@ -40,8 +24,8 @@ provider.setCustomParameters({
 
 // Flag to indicate if we are in the middle of a sign-in flow.
 let isSigningIn = false;
-// Cache the access token in memory (never localStorage).
-let cachedAccessToken: string | null = null;
+// Cache the access token in sessionStorage for tab persistence across reloads.
+let cachedAccessToken: string | null = typeof window !== 'undefined' ? sessionStorage.getItem('wa_calendar_token') : null;
 
 // Initialize auth state listener.
 export const initAuth = (
@@ -50,14 +34,17 @@ export const initAuth = (
 ) => {
   return onAuthStateChanged(auth, async (user: User | null) => {
     if (user) {
+      if (!cachedAccessToken && typeof window !== 'undefined') {
+        cachedAccessToken = sessionStorage.getItem('wa_calendar_token');
+      }
       if (cachedAccessToken) {
         if (onAuthSuccess) onAuthSuccess(user, cachedAccessToken);
       } else if (!isSigningIn) {
-        cachedAccessToken = null;
         if (onAuthFailure) onAuthFailure();
       }
     } else {
       cachedAccessToken = null;
+      if (typeof window !== 'undefined') sessionStorage.removeItem('wa_calendar_token');
       if (onAuthFailure) onAuthFailure();
     }
   });
@@ -76,6 +63,9 @@ export const googleSignIn = async (): Promise<{
     }
 
     cachedAccessToken = credential.accessToken;
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem('wa_calendar_token', cachedAccessToken);
+    }
     return { user: result.user, accessToken: cachedAccessToken };
   } catch (error: any) {
     console.error('Sign in error:', error);
@@ -86,10 +76,16 @@ export const googleSignIn = async (): Promise<{
 };
 
 export const getAccessToken = async (): Promise<string | null> => {
+  if (!cachedAccessToken && typeof window !== 'undefined') {
+    cachedAccessToken = sessionStorage.getItem('wa_calendar_token');
+  }
   return cachedAccessToken;
 };
 
 export const logout = async () => {
   await signOut(auth);
   cachedAccessToken = null;
+  if (typeof window !== 'undefined') {
+    sessionStorage.removeItem('wa_calendar_token');
+  }
 };
